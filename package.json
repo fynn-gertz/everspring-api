@@ -1,0 +1,26 @@
+{
+  "name": "everspring-api",
+  "version": "1.0.0",
+  "description": "Everspring API integration for pflanzenXL via Vercel serverless functions",
+  "main": "api/catalog.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Vercel handles build'",
+    "test": "echo 'No tests'"
+  },
+  "keywords": [
+    "everspring",
+    "ecommerce",
+    "vercel",
+    "serverless"
+  ],
+  "author": "fynn-gertz",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
