@@ -15,12 +15,12 @@ if (!BASE_URL) {
 
 export const everspringClient = {
   async request(method, endpoint, data = null) {
-    const url = `${BASE_URL}${endpoint}`;
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const url = `${BASE_URL}${endpoint}${separator}api_key=${API_KEY}`;
 
     const options = {
       method,
       headers: {
-        'Authorization': `Api-Key ${API_KEY}`,
         'Content-Type': 'application/json',
         'User-Agent': 'pflanzenXL-Everspring-Client/1.0'
       }
@@ -59,23 +59,23 @@ export const everspringClient = {
 
   async getProducts(filters = {}) {
     const query = new URLSearchParams(filters).toString();
-    const endpoint = `/products${query ? `?${query}` : ''}`;
+    const endpoint = `/products/${query ? `?${query}` : ''}`;
     return this.request('GET', endpoint);
   },
 
   async getProduct(productId) {
-    return this.request('GET', `/products/${productId}`);
+    return this.request('GET', `/products/${productId}/`);
   },
 
   async createOrder(orderData) {
-    return this.request('POST', '/orders', orderData);
+    return this.request('POST', `/orders/`, orderData);
   },
 
   async getOrder(orderId) {
-    return this.request('GET', `/orders/${orderId}`);
+    return this.request('GET', `/orders/${orderId}/`);
   },
 
   async getOrderTracking(orderId) {
-    return this.request('GET', `/orders/${orderId}/tracking`);
+    return this.request('GET', `/shipments/?order_id=${orderId}`);
   }
 };
