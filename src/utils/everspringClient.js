@@ -16,7 +16,7 @@ if (!BASE_URL) {
 export const everspringClient = {
   async request(method, endpoint, data = null) {
     const separator = endpoint.includes('?') ? '&' : '?';
-    const url = `${BASE_URL}${endpoint}${separator}api_key=${API_KEY}`;
+    const url = `${BASE_URL}${endpoint}${separator}api_key=${encodeURIComponent(API_KEY)}`;
 
     const options = {
       method,
@@ -34,37 +34,40 @@ export const everspringClient = {
       logger.info(`Everspring request: ${method} ${url}`);
 
       const response = await fetch(url, options);
+      const text = await response.text();
+
+      let body = {};
+      try {
+        body = text ? JSON.parse(text) : {};
+      } catch {
+        body = { raw: text };
+      }
 
       if (!response.ok) {
-        let responseBody = {};
-
-        try {
-          responseBody = await response.json();
-        } catch {
-          responseBody = {};
-        }
-
         logger.error(`Everspring error ${response.status} for ${url}`);
-        logger.error(`Everspring response: ${JSON.stringify(responseBody)}`);
+        logger.error(`Everspring response: ${JSON.stringify(body)}`);
 
         const error = new Error(`HTTP ${response.status}`);
         error.status = response.status;
-        error.response = responseBody;
+        error.response = body;
         throw error;
       }
 
-      return response.json();
+      return body;
     });
   },
 
   async getProducts(filters = {}) {
-    const query = new URLSearchParams(filters).toString();
-    const endpoint = `/products/${query ? `?${query}` : ''}`;
-    return this.request('GET', endpoint);
+    const params = new URLSearchParams({
+      response_format: 'json',
+      ...filters
+    }).toString();
+
+    return this.request('GET', `/products/?${params}`);
   },
 
   async getProduct(productId) {
-    return this.request('GET', `/products/${productId}/`);
+    return this.request('GET', `/products/${productId}/?response_format=json`);
   },
 
   async createOrder(orderData) {
@@ -75,7 +78,11 @@ export const everspringClient = {
     return this.request('GET', `/orders/${orderId}/`);
   },
 
-  async getOrderTracking(orderId) {
-    return this.request('GET', `/shipments/?order_id=${orderId}`);
+  async getOrderTracking(orderReference) {
+    const params = new URLSearchParams({
+      'filter[order__reference]': orderReference
+    }).toString();
+
+    return this.request('GET', `/shipments/?${params}`);
   }
 };
