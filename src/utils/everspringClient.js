@@ -20,7 +20,7 @@ export const everspringClient = {
     const options = {
       method,
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Api-Key ${API_KEY}`,
         'Content-Type': 'application/json',
         'User-Agent': 'pflanzenXL-Everspring-Client/1.0'
       }
