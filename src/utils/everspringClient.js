@@ -12,7 +12,7 @@ if (!API_KEY) {
 
 export const everspringClient = {
   async request(method, endpoint, data = null) {
-    const url = `${BASE_URL}/${CHANNEL_ID}${endpoint}`;
+    const url = `${BASE_URL}${endpoint}`;
 
     const options = {
       method,
