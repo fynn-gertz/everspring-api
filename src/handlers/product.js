@@ -26,20 +26,28 @@ export default async (req, res) => {
     const product = products.find(p => String(p.id) === String(id));
 
     if (!product) {
-      return res.status(404).json({
-        success: false,
-        error: 'Product not found in catalog',
-        debugShape: Object.keys(catalog || {}),
-        sample: products[0] || null
-      });
+      return res.status(404).json({ success: false, error: 'Product not found' });
     }
+
+    const attr = product.attributes || {};
+
+    const mapped = {
+      id: product.id,
+      title: attr.text?.NL?.title || attr.text?.EN?.title || 'Product',
+      description: attr.text?.NL?.description || attr.text?.EN?.description || '',
+      price: attr.prices?.NL || attr.prices?.DE || 0,
+      currency: 'EUR',
+      stock: attr.stock || 0,
+      images: attr.images || [],
+      collection: 'Plants'
+    };
 
     return res.status(200).json({
       success: true,
-      raw: product,
-      keys: Object.keys(product || {}),
+      data: mapped,
       timestamp: new Date().toISOString()
     });
+
   } catch (error) {
     return handleError(error, res);
   }
