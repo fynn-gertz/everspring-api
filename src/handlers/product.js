@@ -18,8 +18,19 @@ export default async (req, res) => {
       return res.status(200).json({ success: true, data: cached, cached: true, timestamp: new Date().toISOString() });
     }
 
-    const product = await everspringClient.getProduct(id);
+const catalog = await everspringClient.getProducts();
+const product = catalog.data?.find(p => String(p.id) === String(id)) 
+  || catalog.results?.find(p => String(p.id) === String(id))
+  || catalog.find?.(p => String(p.id) === String(id));
 
+if (!product) {
+  return res.status(404).json({
+    success: false,
+    error: 'Product not found in catalog',
+    debugShape: Object.keys(catalog || {}),
+    sample: Array.isArray(catalog) ? catalog[0] : catalog.data?.[0] || catalog.results?.[0]
+  });
+}
     const mapped = {
       id: product.id,
       productcode: product.sku || product.code || product.productcode,
