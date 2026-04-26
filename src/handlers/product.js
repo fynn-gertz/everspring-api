@@ -31,17 +31,12 @@ if (!product) {
     sample: Array.isArray(catalog) ? catalog[0] : catalog.data?.[0] || catalog.results?.[0]
   });
 }
-    const mapped = {
-      id: product.id,
-      productcode: product.sku || product.code || product.productcode,
-      title: product.name || product.title,
-      description: product.description || '',
-      price: product.price || 0,
-      currency: product.currency || 'EUR',
-      stock: product.stock ?? product.inventory ?? 0,
-      images: product.images || [],
-      collection: product.collection || 'Uncategorized'
-    };
+return res.status(200).json({
+  success: true,
+  raw: product,
+  keys: Object.keys(product),
+  timestamp: new Date().toISOString()
+});
 
     cache.set(cacheKey, mapped, TTL.PRODUCT);
 
