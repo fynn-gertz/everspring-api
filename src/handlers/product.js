@@ -1,46 +1,45 @@
 import { everspringClient } from '../utils/everspringClient.js';
-import { cache, TTL } from '../utils/cache.js';
 import { handleError, setCorsHeaders, handleOptions } from '../middleware/errorHandler.js';
 
 export default async (req, res) => {
   setCorsHeaders(res);
 
   if (req.method === 'OPTIONS') return handleOptions(req, res);
-  if (req.method !== 'GET') return res.status(405).json({ success: false, error: 'Method not allowed' });
+  if (req.method !== 'GET') {
+    return res.status(405).json({ success: false, error: 'Method not allowed' });
+  }
 
   try {
     const { id } = req.query;
-    if (!id) return res.status(400).json({ success: false, error: 'Product ID is required' });
-
-    const cacheKey = `product:${id}`;
-    const cached = cache.get(cacheKey);
-    if (cached) {
-      return res.status(200).json({ success: true, data: cached, cached: true, timestamp: new Date().toISOString() });
+    if (!id) {
+      return res.status(400).json({ success: false, error: 'Product ID is required' });
     }
 
-const catalog = await everspringClient.getProducts();
-const product = catalog.data?.find(p => String(p.id) === String(id)) 
-  || catalog.results?.find(p => String(p.id) === String(id))
-  || catalog.find?.(p => String(p.id) === String(id));
+    const catalog = await everspringClient.getProducts();
 
-if (!product) {
-  return res.status(404).json({
-    success: false,
-    error: 'Product not found in catalog',
-    debugShape: Object.keys(catalog || {}),
-    sample: Array.isArray(catalog) ? catalog[0] : catalog.data?.[0] || catalog.results?.[0]
-  });
-}
-return res.status(200).json({
-  success: true,
-  raw: product,
-  keys: Object.keys(product),
-  timestamp: new Date().toISOString()
-});
+    const products =
+      Array.isArray(catalog) ? catalog :
+      Array.isArray(catalog.data) ? catalog.data :
+      Array.isArray(catalog.results) ? catalog.results :
+      [];
 
-    cache.set(cacheKey, mapped, TTL.PRODUCT);
+    const product = products.find(p => String(p.id) === String(id));
 
-    return res.status(200).json({ success: true, data: mapped, cached: false, timestamp: new Date().toISOString() });
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        error: 'Product not found in catalog',
+        debugShape: Object.keys(catalog || {}),
+        sample: products[0] || null
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      raw: product,
+      keys: Object.keys(product || {}),
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
     return handleError(error, res);
   }
